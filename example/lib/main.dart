@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'jc_audio_wave.dart';
+import 'package:flutter_audio_recorder/jc_audio_wave.dart';
 
 void main() {
   SystemChrome.setEnabledSystemUIOverlays([]);
