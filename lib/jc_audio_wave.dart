@@ -6,7 +6,8 @@ import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_audio_recorder_example/audio_wave.dart';
+
+import 'audio_wave.dart';
 
 class JCAudioWave extends StatefulWidget {
   final String audioLocalPath;
