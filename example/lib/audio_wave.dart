@@ -1,6 +1,7 @@
 library flutter_audio_recorder;
 
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AudioWaveBar {
@@ -31,8 +32,8 @@ class AudioWave extends StatefulWidget {
     this.spacing = 5,
     this.crossAxisAlignment = WrapCrossAlignment.center,
     this.animation = true,
-    this.animationLoop = 0,
-    this.animateDurations = const Duration(milliseconds: 80),
+    this.animationLoop = 1,
+    this.animateDurations = const Duration(milliseconds: 100),
     @required this.bars,
   });
 
@@ -71,16 +72,14 @@ class _AudioWaveState extends State<AudioWave> {
   @override
   void initState() {
     super.initState();
-    _scrollController = new ScrollController();
+    _scrollController = ScrollController();
     if (widget.animation) {
-      bars = [];
+      bars = widget.bars;
       WidgetsBinding.instance.addPostFrameCallback((x) {
         Timer.periodic(widget.animateDurations, (timer) {
           int mo = countBeat % widget.bars.length;
           bars = List.from(widget.bars.getRange(0, mo + 1));
-          if (mounted) setState(() {
-
-          });
+          if (mounted) setState(() {});
           countBeat++;
           if (widget.animationLoop > 0 && widget.animationLoop <= (countBeat / widget.bars.length)) {
             timer.cancel();
@@ -106,8 +105,6 @@ class _AudioWaveState extends State<AudioWave> {
 
   @override
   Widget build(BuildContext context) {
-    //(thuyenpv) TODO remove later
-    double width = (widget.width - (widget.spacing * widget.bars.length)) / widget.bars.length;
     return Container(
       height: widget.height,
       width: widget.width,
@@ -117,22 +114,24 @@ class _AudioWaveState extends State<AudioWave> {
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         itemCount: bars.length,
-        itemBuilder: (context, index) => Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          alignment: WrapAlignment.center,
-          runAlignment: WrapAlignment.center,
-          children: [
-            Container(
-              alignment: Alignment.center,
-              height: bars[index].height * widget.height / 100,
-              width: 2,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(bars[index].radius),
-              ),
-            )
-          ],
-        ),
+        itemBuilder: (context, index) {
+          return Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.center,
+            runAlignment: WrapAlignment.center,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                height: bars[index].height * widget.height / 100,
+                width: 2,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(bars[index].radius),
+                ),
+              )
+            ],
+          );
+        },
       ),
     );
   }
