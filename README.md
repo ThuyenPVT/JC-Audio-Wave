@@ -6,7 +6,7 @@
 </a>
 </p>
 
-English | [简体中文](./README-zh_CN.md)
+English | (./README-zh_CN.md)
 
 Flutter Audio Record Plugin that supports `Record` `Pause` `Resume` `Stop` and provide access to audio level metering properties `average power` `peak power`
 #### Works for both `Android` and `iOS`
