@@ -1,4 +1,4 @@
-package com.zeno.flutter_audio_recorder;
+package android.src.main.java.com.zeno.flutter_audio_recorder;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

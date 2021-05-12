@@ -14,8 +14,6 @@ dependencies:
   flutter:
     sdk: flutter
   file: ^5.0.4
-  wave_generator: ^0.1.0
-
 
 dev_dependencies:
   flutter_test:

@@ -56,7 +56,7 @@ packages:
       name: file
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.0.10"
+    version: "5.2.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -73,7 +73,7 @@ packages:
       name: intl
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.16.0"
+    version: "0.16.1"
   matcher:
     dependency: transitive
     description:
@@ -156,12 +156,5 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0-nullsafety.3"
-  wave_generator:
-    dependency: "direct main"
-    description:
-      name: wave_generator
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.0"
 sdks:
   dart: ">=2.10.0-110 <2.11.0"
