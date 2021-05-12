@@ -7,13 +7,14 @@ authors:
 homepage: https://github.com/shadow-app/flutter_audio_recorder
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   path: ^1.5.1
   flutter:
     sdk: flutter
   file: ^5.0.4
+  wave_generator: ^0.1.0
 
 
 dev_dependencies:

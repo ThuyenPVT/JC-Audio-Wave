@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
-
+import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_audio_recorder_example/audio_wave.dart';
 
 void main() {
   SystemChrome.setEnabledSystemUIOverlays([]);
@@ -22,10 +23,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
+    return MaterialApp(
+      home: Scaffold(
         body: SafeArea(
-          child: new RecorderExample(),
+          child: RecorderExample(),
         ),
       ),
     );
@@ -35,108 +36,125 @@ class _MyAppState extends State<MyApp> {
 class RecorderExample extends StatefulWidget {
   final LocalFileSystem localFileSystem;
 
-  RecorderExample({localFileSystem})
-      : this.localFileSystem = localFileSystem ?? LocalFileSystem();
+  RecorderExample({
+    localFileSystem,
+  }) : this.localFileSystem = localFileSystem ?? LocalFileSystem();
 
   @override
   State<StatefulWidget> createState() => new RecorderExampleState();
 }
 
 class RecorderExampleState extends State<RecorderExample> {
-  FlutterAudioRecorder _recorder;
   Recording _current;
+  FlutterAudioRecorder _recorder;
   RecordingStatus _currentStatus = RecordingStatus.Unset;
+  ValueNotifier<List<AudioWaveBar>> _audioWaveBarNotifier;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _init();
+    _initial();
+    _audioWaveBarNotifier = ValueNotifier([]);
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Center(
-      child: new Padding(
-        padding: new EdgeInsets.all(8.0),
-        child: new Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              new Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: new FlatButton(
-                      onPressed: () {
-                        switch (_currentStatus) {
-                          case RecordingStatus.Initialized:
-                            {
-                              _start();
-                              break;
-                            }
-                          case RecordingStatus.Recording:
-                            {
-                              _pause();
-                              break;
-                            }
-                          case RecordingStatus.Paused:
-                            {
-                              _resume();
-                              break;
-                            }
-                          case RecordingStatus.Stopped:
-                            {
-                              _init();
-                              break;
-                            }
-                          default:
-                            break;
-                        }
-                      },
-                      child: _buildText(_currentStatus),
-                      color: Colors.lightBlue,
-                    ),
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FlatButton(
+                    onPressed: () {
+                      switch (_currentStatus) {
+                        case RecordingStatus.Initialized:
+                          _startRecord();
+                          break;
+                        case RecordingStatus.Recording:
+                          _pauseRecord();
+                          break;
+                        case RecordingStatus.Paused:
+                          _resumeRecord();
+                          break;
+                        case RecordingStatus.Stopped:
+                          _initial();
+                          break;
+                        default:
+                          break;
+                      }
+                    },
+                    child: _buildText(_currentStatus),
+                    color: Colors.lightBlue,
                   ),
-                  new FlatButton(
-                    onPressed:
-                        _currentStatus != RecordingStatus.Unset ? _stop : null,
-                    child:
-                        new Text("Stop", style: TextStyle(color: Colors.white)),
-                    color: Colors.blueAccent.withOpacity(0.5),
+                ),
+                FlatButton(
+                  onPressed: _currentStatus != RecordingStatus.Unset ? _stopRecord : null,
+                  child: new Text(
+                    "Stop",
+                    style: TextStyle(color: Colors.white),
                   ),
-                  SizedBox(
-                    width: 8,
+                  color: Colors.blueAccent.withOpacity(0.5),
+                ),
+                const SizedBox(width: 8),
+                FlatButton(
+                  onPressed: onPlayAudio,
+                  child: new Text("Play", style: TextStyle(color: Colors.white)),
+                  color: Colors.blueAccent.withOpacity(0.5),
+                ),
+              ],
+            ),
+            ValueListenableBuilder(
+              valueListenable: _audioWaveBarNotifier,
+              builder: (_, List<AudioWaveBar> audioWaveBar, __) {
+                return Container(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(50),
                   ),
-                  new FlatButton(
-                    onPressed: onPlayAudio,
-                    child:
-                        new Text("Play", style: TextStyle(color: Colors.white)),
-                    color: Colors.blueAccent.withOpacity(0.5),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: AudioWave(
+                          height: 50,
+                          width: 300,
+                          spacing: 2.5,
+                          animationLoop: 100,
+                          bars: audioWaveBar,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${_current?.duration?.toString().substring(0, _current?.duration?.toString()?.lastIndexOf('.'))}',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                    ],
                   ),
-                ],
-              ),
-              new Text("Status : $_currentStatus"),
-              new Text('Avg Power: ${_current?.metering?.averagePower}'),
-              new Text('Peak Power: ${_current?.metering?.peakPower}'),
-              new Text("File path of the record: ${_current?.path}"),
-              new Text("Format: ${_current?.audioFormat}"),
-              new Text(
-                  "isMeteringEnabled: ${_current?.metering?.isMeteringEnabled}"),
-              new Text("Extension : ${_current?.extension}"),
-              new Text(
-                  "Audio recording duration : ${_current?.duration.toString()}")
-            ]),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  _init() async {
+  _initial() async {
     try {
       if (await FlutterAudioRecorder.hasPermissions) {
         String customPath = '/flutter_audio_recorder_';
         io.Directory appDocDirectory;
-//        io.Directory appDocDirectory = await getApplicationDocumentsDirectory();
+        // io.Directory appDocDirectory = await getApplicationDocumentsDirectory();
         if (io.Platform.isIOS) {
           appDocDirectory = await getApplicationDocumentsDirectory();
         } else {
@@ -144,15 +162,12 @@ class RecorderExampleState extends State<RecorderExample> {
         }
 
         // can add extension like ".mp4" ".wav" ".m4a" ".aac"
-        customPath = appDocDirectory.path +
-            customPath +
-            DateTime.now().millisecondsSinceEpoch.toString();
+        customPath = appDocDirectory.path + customPath + DateTime.now().millisecondsSinceEpoch.toString();
 
         // .wav <---> AudioFormat.WAV
         // .mp4 .m4a .aac <---> AudioFormat.AAC
         // AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
-        _recorder =
-            FlutterAudioRecorder(customPath, audioFormat: AudioFormat.WAV);
+        _recorder = FlutterAudioRecorder(customPath, audioFormat: AudioFormat.WAV);
 
         await _recorder.initialized;
         // after initialization
@@ -165,15 +180,15 @@ class RecorderExampleState extends State<RecorderExample> {
           print(_currentStatus);
         });
       } else {
-        Scaffold.of(context).showSnackBar(
-            new SnackBar(content: new Text("You must accept permissions")));
+        Scaffold.of(context).showSnackBar(new SnackBar(content: new Text("You must accept permissions")));
       }
     } catch (e) {
       print(e);
     }
   }
 
-  _start() async {
+  //Start recording status
+  _startRecord() async {
     try {
       await _recorder.start();
       var recording = await _recorder.current(channel: 0);
@@ -182,16 +197,18 @@ class RecorderExampleState extends State<RecorderExample> {
       });
 
       const tick = const Duration(milliseconds: 50);
-      new Timer.periodic(tick, (Timer t) async {
+      new Timer.periodic(tick, (Timer timer) async {
         if (_currentStatus == RecordingStatus.Stopped) {
-          t.cancel();
+          timer.cancel();
         }
-
         var current = await _recorder.current(channel: 0);
-        // print(current.status);
         setState(() {
+          Color _randomColor = Colors.primaries[Random().nextInt(Colors.primaries.length)];
           _current = current;
           _currentStatus = _current.status;
+          _audioWaveBarNotifier.value.add(
+            AudioWaveBar(height: _current?.metering?.averagePower?.toDouble()?.abs(), color: _randomColor),
+          );
         });
       });
     } catch (e) {
@@ -199,17 +216,19 @@ class RecorderExampleState extends State<RecorderExample> {
     }
   }
 
-  _resume() async {
+  _resumeRecord() async {
     await _recorder.resume();
     setState(() {});
   }
 
-  _pause() async {
+  //Pause recording status
+  _pauseRecord() async {
     await _recorder.pause();
     setState(() {});
   }
 
-  _stop() async {
+  //Stop recording status
+  _stopRecord() async {
     var result = await _recorder.stop();
     print("Stop recording: ${result.path}");
     print("Stop recording: ${result.duration}");
@@ -225,29 +244,24 @@ class RecorderExampleState extends State<RecorderExample> {
     var text = "";
     switch (_currentStatus) {
       case RecordingStatus.Initialized:
-        {
-          text = 'Start';
-          break;
-        }
+        text = 'Start';
+        break;
       case RecordingStatus.Recording:
-        {
-          text = 'Pause';
-          break;
-        }
+        text = 'Pause';
+        break;
       case RecordingStatus.Paused:
-        {
-          text = 'Resume';
-          break;
-        }
+        text = 'Resume';
+        break;
       case RecordingStatus.Stopped:
-        {
-          text = 'Init';
-          break;
-        }
+        text = 'Init';
+        break;
       default:
         break;
     }
-    return Text(text, style: TextStyle(color: Colors.white));
+    return Text(
+      text,
+      style: TextStyle(color: Colors.white),
+    );
   }
 
   void onPlayAudio() async {

@@ -7,8 +7,7 @@ import 'package:path/path.dart' as p;
 
 /// Audio Recorder Plugin
 class FlutterAudioRecorder {
-  static const MethodChannel _channel =
-      const MethodChannel('flutter_audio_recorder');
+  static const MethodChannel _channel = const MethodChannel('flutter_audio_recorder');
   static const String DEFAULT_EXTENSION = '.m4a';
   static LocalFileSystem fs = LocalFileSystem();
 
@@ -18,11 +17,12 @@ class FlutterAudioRecorder {
   int _sampleRate;
 
   Future _initRecorder;
+
   Future get initialized => _initRecorder;
+
   Recording get recording => _recording;
 
-  FlutterAudioRecorder(String path,
-      {AudioFormat audioFormat, int sampleRate = 16000}) {
+  FlutterAudioRecorder(String path, {AudioFormat audioFormat, int sampleRate = 16000}) {
     _initRecorder = _init(path, audioFormat, sampleRate);
   }
 
@@ -67,8 +67,8 @@ class FlutterAudioRecorder {
     _sampleRate = sampleRate;
 
     Map<String, Object> response;
-    var result = await _channel.invokeMethod('init',
-        {"path": _path, "extension": _extension, "sampleRate": _sampleRate});
+    var result =
+        await _channel.invokeMethod('init', {"path": _path, "extension": _extension, "sampleRate": _sampleRate});
 
     if (result != false) {
       response = Map.from(result);
@@ -76,8 +76,7 @@ class FlutterAudioRecorder {
 
     _recording = new Recording()
       ..status = _stringToRecordingStatus(response['status'])
-      ..metering = new AudioMetering(
-          averagePower: -120, peakPower: -120, isMeteringEnabled: true);
+      ..metering = new AudioMetering(averagePower: -120, peakPower: -120, isMeteringEnabled: true);
 
     return;
   }
