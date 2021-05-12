@@ -2,7 +2,7 @@
     package="com.zeno.flutter_audio_recorder">
 
     <application>
-        <activity android:name="FlutterAudioRecorderPlugin.kt" />
+        <activity android:name="FlutterAudioRecorderPlugin.java" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
